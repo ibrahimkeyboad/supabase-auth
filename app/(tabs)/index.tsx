@@ -30,23 +30,23 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   // Use React Query hooks instead of useEffect
-  const { 
-    data: featuredProducts = [], 
-    isLoading: featuredLoading, 
+  const {
+    data: featuredProducts = [],
+    isLoading: featuredLoading,
     error: featuredError,
-    refetch: refetchFeatured 
+    refetch: refetchFeatured,
   } = useFeaturedProducts(6);
 
-  const { 
-    data: newProducts = [], 
-    isLoading: newLoading, 
+  const {
+    data: newProducts = [],
+    isLoading: newLoading,
     error: newError,
-    refetch: refetchNew 
+    refetch: refetchNew,
   } = useNewProducts(6);
 
   const categoryTabs = [
     { id: 'all', name: 'All' },
-    ...categories.map(cat => ({ id: cat.id, name: cat.name }))
+    ...categories.map((cat) => ({ id: cat.id, name: cat.name })),
   ];
 
   const onRefresh = async () => {
@@ -84,19 +84,15 @@ export default function HomeScreen() {
       <View style={styles.productImageContainer}>
         {item.discount > 0 && (
           <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>
-              -{item.discount}%
-            </Text>
+            <Text style={styles.discountText}>-{item.discount}%</Text>
           </View>
         )}
         <Image source={{ uri: item.img }} style={styles.productImage} />
       </View>
-      
+
       <View style={styles.productInfo}>
         <View style={styles.categoryBadge}>
-          <Text style={styles.categoryBadgeText}>
-            {item.category}
-          </Text>
+          <Text style={styles.categoryBadgeText}>{item.category}</Text>
         </View>
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
@@ -131,9 +127,12 @@ export default function HomeScreen() {
     </View>
   );
 
-  const filteredProducts = selectedCategory === 'all' 
-    ? [...featuredProducts, ...newProducts]
-    : [...featuredProducts, ...newProducts].filter(p => p.categoryId === selectedCategory);
+  const filteredProducts =
+    selectedCategory === 'all'
+      ? [...featuredProducts, ...newProducts]
+      : [...featuredProducts, ...newProducts].filter(
+          (p) => p.categoryId === selectedCategory
+        );
 
   const isRefreshing = featuredLoading || newLoading;
 
@@ -143,10 +142,9 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <UserProfile showSignOut={false} style={styles.userProfile} />
-          
-          
+        </View>
 
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -173,7 +171,9 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Featured Products</Text>
-              <TouchableOpacity onPress={() => router.push('/products/featured')}>
+              <TouchableOpacity
+                onPress={() => router.push('/products/featured')}
+              >
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>
@@ -224,7 +224,12 @@ export default function HomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>
-                  {selectedCategory === 'all' ? 'All Products' : `${categoryTabs.find(c => c.id === selectedCategory)?.name} Products`}
+                  {selectedCategory === 'all'
+                    ? 'All Products'
+                    : `${
+                        categoryTabs.find((c) => c.id === selectedCategory)
+                          ?.name
+                      } Products`}
                 </Text>
               </View>
 
