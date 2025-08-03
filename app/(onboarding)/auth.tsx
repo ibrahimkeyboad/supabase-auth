@@ -62,8 +62,7 @@ export default function AuthScreen() {
 
           <Text style={styles.title}>Welcome to AgriLink</Text>
           <Text style={styles.subtitle}>
-            Connect with trusted suppliers and grow your Agrovet business with
-            quality agricultural products
+            Connect with trusted suppliers using your phone number to get started with quality agricultural products
           </Text>
 
           {/* OTP Sign In Form */}

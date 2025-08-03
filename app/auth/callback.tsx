@@ -17,108 +17,32 @@ export default function AuthCallback() {
       try {
         console.log('🔄 Processing auth callback...');
         
-        // Check if we have URL parameters (for web)
-        if (typeof window !== 'undefined') {
-          const urlParams = new URLSearchParams(window.location.search);
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        // Check if there's already a session (phone OTP doesn't use URL callbacks)
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          console.log('✅ Session found for:', session.user.phone || session.user.email);
+          setStatus('success');
           
-          // Check for error in URL
-          const error = urlParams.get('error') || hashParams.get('error');
-          const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
-          
-          if (error) {
-            console.error('❌ Auth callback error:', error, errorDescription);
-            setStatus('error');
-            setTimeout(() => {
-              router.replace('/(onboarding)/auth');
-            }, 2000);
-            return;
-          }
-
-          // Check for access token
-          const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
-          const refreshToken = urlParams.get('refresh_token') || hashParams.get('refresh_token');
-          
-          if (accessToken && refreshToken) {
-            console.log('🔑 Setting session from URL params...');
+          // Check onboarding status
+          try {
+            const hasCompletedOnboarding = await UserProfileService.hasCompletedOnboarding();
+            console.log('🔍 Onboarding completed:', hasCompletedOnboarding);
             
-            const { data, error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-
-            if (sessionError) {
-              console.error('❌ Error setting session:', sessionError);
-              setStatus('error');
-              setTimeout(() => {
-                router.replace('/(onboarding)/auth');
-              }, 2000);
-              return;
-            }
-
-            if (data.user) {
-              console.log('✅ Session set successfully for:', data.user.email);
-              setStatus('success');
-              
-              // Check onboarding status and redirect accordingly
-              try {
-                const hasCompletedOnboarding = await UserProfileService.hasCompletedOnboarding();
-                console.log('🔍 Onboarding completed:', hasCompletedOnboarding);
-                
-                setTimeout(() => {
-                  if (hasCompletedOnboarding) {
-                    console.log('✅ Redirecting to main app');
-                    router.replace('/(tabs)');
-                  } else {
-                    console.log('📝 Redirecting to onboarding');
-                    router.replace('/(onboarding)/profile-setup');
-                  }
-                }, 1000);
-              } catch (error) {
-                console.error('❌ Failed to check onboarding status:', error);
-                // Default to onboarding if we can't check
-                setTimeout(() => {
-                  router.replace('/(onboarding)/profile-setup');
-                }, 1000);
-              }
-              // Small delay to show success state, then redirect
-              setTimeout(() => {
+            setTimeout(() => {
+              if (hasCompletedOnboarding) {
                 router.replace('/(tabs)');
-              }, 1000);
-              return;
-            }
-          }
-
-          // If we get here, check if there's already a session
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session?.user) {
-            console.log('✅ Existing session found for:', session.user.email);
-            setStatus('success');
-            
-            // Check onboarding status for existing session
-            try {
-              const hasCompletedOnboarding = await UserProfileService.hasCompletedOnboarding();
-              console.log('🔍 Existing user onboarding completed:', hasCompletedOnboarding);
-              
-              setTimeout(() => {
-                if (hasCompletedOnboarding) {
-                  router.replace('/(tabs)');
-                } else {
-                  router.replace('/(onboarding)/profile-setup');
-                }
-              }, 1000);
-            } catch (error) {
-              console.error('❌ Failed to check existing user onboarding:', error);
-              setTimeout(() => {
+              } else {
                 router.replace('/(onboarding)/profile-setup');
-              }, 1000);
-            }
-            setTimeout(() => {
-              router.replace('/(tabs)');
+              }
             }, 1000);
-            return;
+          } catch (error) {
+            console.error('❌ Failed to check onboarding status:', error);
+            setTimeout(() => {
+              router.replace('/(onboarding)/profile-setup');
+            }, 1000);
           }
+          return;
         }
 
         // If no auth data found, redirect to auth screen

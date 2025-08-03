@@ -26,7 +26,7 @@ export default function PersonalInfoScreen() {
   const [formData, setFormData] = useState({
     fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
     email: user?.email || '',
-    phone: '',
+    phone: user?.phone || '',
   });
   
   const isLoading = updatePersonalInfoMutation.isPending;
@@ -94,7 +94,7 @@ export default function PersonalInfoScreen() {
               leftIcon={<Mail size={20} color={Colors.neutral[500]} />}
               keyboardType="email-address"
               autoCapitalize="none"
-              editable={!user?.email} // Disable if email comes from auth
+              editable={true}
             />
 
             <Input
@@ -104,6 +104,7 @@ export default function PersonalInfoScreen() {
               placeholder="+255 7043 123 456"
               leftIcon={<Phone size={20} color={Colors.neutral[500]} />}
               keyboardType="phone-pad"
+              editable={!user?.phone} // Disable if phone comes from auth
             />
           </View>
         </View>

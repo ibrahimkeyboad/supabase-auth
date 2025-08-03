@@ -3,18 +3,16 @@ import { Platform } from 'react-native';
 
 export class AuthService {
   /**
-   * Sign in with OTP (email)
+   * Sign in with OTP (phone)
    */
-  static async signInWithOTP(email: string) {
+  static async signInWithOTP(phone: string) {
     try {
-      console.log('🔗 Starting OTP sign-in for:', email);
+      console.log('🔗 Starting OTP sign-in for:', phone);
 
       const { data, error } = await supabase.auth.signInWithOtp({
-        email,
+        phone,
         options: {
-          emailRedirectTo: Platform.OS === 'web' 
-            ? `${window.location.origin}/auth/callback`
-            : undefined,
+          channel: 'sms',
         },
       });
 
@@ -37,14 +35,14 @@ export class AuthService {
   /**
    * Verify OTP token
    */
-  static async verifyOTP(email: string, token: string) {
+  static async verifyOTP(phone: string, token: string) {
     try {
-      console.log('🔐 Verifying OTP for:', email);
+      console.log('🔐 Verifying OTP for:', phone);
 
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
+        phone,
         token,
-        type: 'email',
+        type: 'sms',
       });
 
       if (error) {

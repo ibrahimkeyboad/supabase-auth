@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Mail, Lock } from 'lucide-react-native';
+import { Phone, Lock } from 'lucide-react-native';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -21,23 +21,27 @@ interface OTPSignInFormProps {
 
 export default function OTPSignInForm({ style }: OTPSignInFormProps) {
   const { signInWithOTP, verifyOTP, loading, verifyingOtp, otpSent, error, clearError } = useAuth();
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
 
   const handleSendOTP = async () => {
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+    if (!phone.trim()) {
+      Alert.alert('Error', 'Please enter your phone number');
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+    // Basic phone validation for Tanzanian numbers
+    const phoneRegex = /^(\+255|0)[67]\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert('Error', 'Please enter a valid Tanzanian phone number (e.g., +255712345678 or 0712345678)');
       return;
     }
+
+    // Normalize phone number to international format
+    const normalizedPhone = phone.startsWith('0') ? '+255' + phone.slice(1) : phone;
 
     clearError();
-    await signInWithOTP(email);
+    await signInWithOTP(normalizedPhone);
   };
 
   const handleVerifyOTP = async () => {
@@ -52,12 +56,12 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
     }
 
     clearError();
-    await verifyOTP(email, otpCode);
+    await verifyOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone, otpCode);
   };
 
   const handleResendOTP = async () => {
     clearError();
-    await signInWithOTP(email);
+    await signInWithOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone);
   };
 
   return (
@@ -70,16 +74,16 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
           <>
             <Text style={styles.title}>Sign in to AgriLink</Text>
             <Text style={styles.subtitle}>
-              Enter your email address to receive a verification code
+              Enter your phone number to receive a verification code via SMS
             </Text>
 
             <Input
-              label="Email Address"
-              value={email}
-              onChangeText={setEmail}
-              placeholder="youremail@example.com"
-              leftIcon={<Mail size={20} color={Colors.neutral[500]} />}
-              keyboardType="email-address"
+              label="Phone Number"
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="+255712345678 or 0712345678"
+              leftIcon={<Phone size={20} color={Colors.neutral[500]} />}
+              keyboardType="phone-pad"
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -95,7 +99,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
           <>
             <Text style={styles.title}>Enter Verification Code</Text>
             <Text style={styles.subtitle}>
-              We've sent a 6-digit code to {email}
+              We've sent a 6-digit code to {phone}
             </Text>
 
             <Input
@@ -126,13 +130,13 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
             />
 
             <Button
-              title="Change Email"
+              title="Change Phone"
               onPress={() => {
                 setOtpCode('');
                 clearError();
               }}
               variant="text"
-              style={styles.changeEmailButton}
+              style={styles.changePhoneButton}
             />
           </>
         )}
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 16,
   },
-  changeEmailButton: {
+  changePhoneButton: {
     width: '100%',
     marginTop: 8,
   },

@@ -15,8 +15,8 @@ interface AuthState {
 }
 
 interface AuthActions {
-  signInWithOTP: (email: string) => Promise<void>;
-  verifyOTP: (email: string, token: string) => Promise<void>;
+  signInWithOTP: (phone: string) => Promise<void>;
+  verifyOTP: (phone: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
   clearError: () => void;
   initialize: () => Promise<void>;
@@ -42,12 +42,12 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   verifyingOtp: false,
 
   // Actions
-  signInWithOTP: async (email: string) => {
+  signInWithOTP: async (phone: string) => {
     try {
       set({ loading: true, error: null });
-      console.log('🚀 Starting OTP sign-in for:', email);
+      console.log('🚀 Starting OTP sign-in for:', phone);
 
-      const { data, error } = await AuthService.signInWithOTP(email);
+      const { data, error } = await AuthService.signInWithOTP(phone);
 
       if (error) {
         console.error('❌ OTP send error:', error);
@@ -75,12 +75,12 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     }
   },
 
-  verifyOTP: async (email: string, token: string) => {
+  verifyOTP: async (phone: string, token: string) => {
     try {
       set({ verifyingOtp: true, error: null });
-      console.log('🔐 Verifying OTP for:', email);
+      console.log('🔐 Verifying OTP for:', phone);
 
-      const { data, error } = await AuthService.verifyOTP(email, token);
+      const { data, error } = await AuthService.verifyOTP(phone, token);
 
       if (error) {
         console.error('❌ OTP verification error:', error);
@@ -153,7 +153,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         set({ error: error.message });
       }
 
-      console.log('📋 Initial session:', session?.user?.email || 'No user');
+      console.log('📋 Initial session:', session?.user?.phone || session?.user?.email || 'No user');
 
       set({
         user: session?.user || null,
@@ -170,7 +170,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
           console.log(
             '🔄 Auth state changed:',
             event,
-            session?.user?.email || 'No user'
+            session?.user?.phone || session?.user?.email || 'No user'
           );
 
           set({
@@ -185,17 +185,17 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             case 'SIGNED_IN':
               console.log(
                 '✅ User signed in successfully:',
-                session?.user?.email
+                session?.user?.phone || session?.user?.email
               );
               break;
             case 'SIGNED_OUT':
               console.log('👋 User signed out');
               break;
             case 'TOKEN_REFRESHED':
-              console.log('🔄 Token refreshed for user:', session?.user?.email);
+              console.log('🔄 Token refreshed for user:', session?.user?.phone || session?.user?.email);
               break;
             case 'USER_UPDATED':
-              console.log('👤 User updated:', session?.user?.email);
+              console.log('👤 User updated:', session?.user?.phone || session?.user?.email);
               break;
           }
         }

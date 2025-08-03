@@ -41,6 +41,7 @@ export default function UserProfile({ showSignOut = true, style }: UserProfilePr
 
   const displayName = user.user_metadata?.full_name || 
                      user.user_metadata?.name || 
+                     user.phone || 
                      user.email?.split('@')[0] || 
                      'User';
 
@@ -64,8 +65,8 @@ export default function UserProfile({ showSignOut = true, style }: UserProfilePr
         
         <View style={styles.userDetails}>
           <Text style={styles.userName}>{displayName}</Text>
-          {user.email && (
-            <Text style={styles.userEmail}>{user.email}</Text>
+          {(user.phone || user.email) && (
+            <Text style={styles.userEmail}>{user.phone || user.email}</Text>
           )}
         </View>
       </View>
