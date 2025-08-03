@@ -144,22 +144,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <UserProfile showSignOut={false} style={styles.userProfile} />
           
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={() => router.push('/(tabs)/search')}
-            >
-              <Search size={24} color={Colors.neutral[700]} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={() => router.push('/(tabs)/cart')}
-            >
-              <ShoppingCart size={24} color={Colors.neutral[700]} />
-             
-            </TouchableOpacity>
-          </View>
-        </View>
+          
 
         <ScrollView 
           showsVerticalScrollIndicator={false}
