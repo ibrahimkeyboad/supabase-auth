@@ -131,7 +131,6 @@ export default function ProfileSetupScreen() {
         .upsert({
           id: user.id,
           full_name: formData.fullName,
-          email: user.email,
           phone: user.phone,
           profile_image_url: formData.profileImage,
         });

@@ -21,23 +21,28 @@ export default function AuthCallback() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          console.log('✅ Session found for:', session.user.phone || session.user.email);
+          console.log('✅ Session found for:', session.user.phone);
           setStatus('success');
           
-          // Check onboarding status
+          // Check if user has profile with name and shop address
           try {
-            const hasCompletedOnboarding = await UserProfileService.hasCompletedOnboarding();
-            console.log('🔍 Onboarding completed:', hasCompletedOnboarding);
+            const profile = await UserProfileService.getUserProfile();
+            console.log('🔍 User profile:', profile);
+            
+            const hasName = profile?.full_name?.trim();
+            const hasShopAddress = profile?.region && profile?.district && profile?.street_area;
             
             setTimeout(() => {
-              if (hasCompletedOnboarding) {
+              if (hasName && hasShopAddress) {
+                console.log('✅ Profile complete, redirecting to main app');
                 router.replace('/(tabs)');
               } else {
+                console.log('❌ Profile incomplete, redirecting to profile setup');
                 router.replace('/(onboarding)/profile-setup');
               }
             }, 1000);
           } catch (error) {
-            console.error('❌ Failed to check onboarding status:', error);
+            console.error('❌ Failed to check profile status:', error);
             setTimeout(() => {
               router.replace('/(onboarding)/profile-setup');
             }, 1000);

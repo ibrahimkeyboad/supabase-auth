@@ -54,7 +54,7 @@ export function useUpdatePersonalInfo() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { full_name: string; email: string; phone: string }) =>
+    mutationFn: (data: { full_name: string; phone: string }) =>
       UserProfileService.updatePersonalInfo(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userProfileKeys.all });

@@ -98,7 +98,22 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         error: null,
       });
 
-      // Session will be set automatically by auth state change listener
+      // Check profile and redirect appropriately
+      try {
+        const profile = await UserProfileService.getUserProfile();
+        const hasName = profile?.full_name?.trim();
+        const hasShopAddress = profile?.region && profile?.district && profile?.street_area;
+        
+        if (hasName && hasShopAddress) {
+          // Profile is complete, user will be redirected to main app
+          console.log('✅ Profile complete');
+        } else {
+          // Profile needs completion
+          console.log('❌ Profile incomplete, needs setup');
+        }
+      } catch (profileError) {
+        console.error('❌ Failed to check profile:', profileError);
+      }
     } catch (error) {
       console.error('❌ Unexpected OTP verification error:', error);
       set({

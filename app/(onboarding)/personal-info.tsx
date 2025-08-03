@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Mail, Phone } from 'lucide-react-native';
+import { User, Phone } from 'lucide-react-native';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -25,7 +25,6 @@ export default function PersonalInfoScreen() {
   
   const [formData, setFormData] = useState({
     fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || '',
-    email: user?.email || '',
     phone: user?.phone || '',
   });
   
@@ -37,10 +36,6 @@ export default function PersonalInfoScreen() {
       return;
     }
 
-    if (!formData.email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
-      return;
-    }
 
     if (!formData.phone.trim()) {
       Alert.alert('Error', 'Please enter your phone number');
@@ -50,7 +45,6 @@ export default function PersonalInfoScreen() {
     try {
       await updatePersonalInfoMutation.mutateAsync({
         full_name: formData.fullName,
-        email: formData.email,
         phone: formData.phone,
       });
       
@@ -86,16 +80,6 @@ export default function PersonalInfoScreen() {
               autoCapitalize="words"
             />
 
-            <Input
-              label="Email Address"
-              value={formData.email}
-              onChangeText={(text) => setFormData({ ...formData, email: text })}
-              placeholder="youremail@gmail.com"
-              leftIcon={<Mail size={20} color={Colors.neutral[500]} />}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={true}
-            />
 
             <Input
               label="Phone Number"

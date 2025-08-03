@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/authStore';
 export interface UserProfile {
   id: string;
   full_name?: string;
-  email?: string;
   phone?: string;
   profile_image_url?: string;
   region?: string;
@@ -20,7 +19,6 @@ export interface UserProfile {
 
 export interface UserProfileUpdate {
   full_name?: string;
-  email?: string;
   phone?: string;
   profile_image_url?: string;
   region?: string;
@@ -152,7 +150,6 @@ export class UserProfileService {
    */
   static async updatePersonalInfo(data: {
     full_name: string;
-    email: string;
     phone: string;
   }): Promise<UserProfile> {
     return this.updateUserProfile(data);
