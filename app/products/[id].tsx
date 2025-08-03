@@ -27,7 +27,6 @@ import Typography from '@/constants/Typography';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import { useProduct } from '@/hooks/useProducts';
-import { useCart } from '@/hooks/useCart';
 import { formatCurrency } from '@/utils/currency';
 
 const { width } = Dimensions.get('window');
@@ -39,7 +38,6 @@ export default function ProductDetailScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   
-  const { addToCart, isItemInCart } = useCart();
   
   // Use React Query hook instead of useEffect
   const { data: product, isLoading, error, refetch } = useProduct(id || '');
@@ -84,25 +82,7 @@ export default function ProductDetailScreen() {
     setIsFavorite(!isFavorite);
   };
 
-  const handleAddToCart = () => {
-    // Convert our Product type to the format expected by cart
-    const cartProduct = {
-      id: product.id,
-      name: product.name,
-      imageUrl: product.img,
-      price: product.price.amount,
-      supplier: product.brand,
-      categoryId: product.categoryId,
-      createdAt: product.createdAt,
-      inStock: product.stockStatus === 'In Stock',
-      stockQuantity: product.quantityInStock,
-      rating: product.rating,
-      reviews: product.reviewsCount,
-      description: product.description,
-    };
-    
-    addToCart(cartProduct, quantity);
-  };
+ 
 
   const renderImagePaginator = () => {
     // For now, we'll just show one image, but this can be extended for multiple images
@@ -317,7 +297,7 @@ export default function ProductDetailScreen() {
                 {formatCurrency(product.price.amount * quantity)}
               </Text>
             </View>
-            <Button
+            {/* <Button
               title={isItemInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
               onPress={handleAddToCart}
               leftIcon={<ShoppingCart size={20} color={Colors.white} />}
@@ -326,7 +306,7 @@ export default function ProductDetailScreen() {
                 isItemInCart(product.id) && styles.addedToCartButton
               ]}
               disabled={product.stockStatus !== 'In Stock'}
-            />
+            /> */}
           </View>
         </View>
       </View>
