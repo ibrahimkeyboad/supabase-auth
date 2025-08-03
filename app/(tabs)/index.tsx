@@ -28,7 +28,6 @@ const { width } = Dimensions.get('window');
 export default function HomeScreen() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const { getTotalItems } = useCart();
 
   // Use React Query hooks instead of useEffect
   const { 
@@ -157,11 +156,7 @@ export default function HomeScreen() {
               onPress={() => router.push('/(tabs)/cart')}
             >
               <ShoppingCart size={24} color={Colors.neutral[700]} />
-              {getTotalItems() > 0 && (
-                <View style={styles.cartBadge}>
-                  <Text style={styles.cartBadgeText}>{getTotalItems()}</Text>
-                </View>
-              )}
+             
             </TouchableOpacity>
           </View>
         </View>
