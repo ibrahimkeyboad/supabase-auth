@@ -18,7 +18,6 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import ProductCard from '@/components/common/ProductCard';
 import { categories } from '@/data/categories';
-import { useCart } from '@/hooks/useCart';
 import { useFeaturedProducts, useNewProducts } from '@/hooks/useProducts';
 import { formatCurrency } from '@/utils/currency';
 import UserProfile from '@/components/auth/UserProfile';
