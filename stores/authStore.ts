@@ -1,7 +1,10 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { AuthService } from '@/lib/auth';
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import { UserProfileService } from '@/services/userProfileService';
 
 interface AuthState {
   user: User | null;
@@ -12,6 +15,7 @@ interface AuthState {
   onboardingCompleted: boolean;
   otpSent: boolean;
   verifyingOtp: boolean;
+  savedPhoneNumber: string | null;
 }
 
 interface AuthActions {
@@ -26,11 +30,15 @@ interface AuthActions {
   setError: (error: string | null) => void;
   setOtpSent: (sent: boolean) => void;
   setVerifyingOtp: (verifying: boolean) => void;
+  setSavedPhoneNumber: (phone: string | null) => void;
+  checkProfileCompletion: () => Promise<'complete' | 'needs_name' | 'needs_shop_address'>;
 }
 
 type AuthStore = AuthState & AuthActions;
 
-export const useAuthStore = create<AuthStore>()((set, get) => ({
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set, get) => ({
   // State
   user: null,
   session: null,
@@ -40,6 +48,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   onboardingCompleted: false,
   otpSent: false,
   verifyingOtp: false,
+  savedPhoneNumber: null,
 
   // Actions
   signInWithOTP: async (phone: string) => {
@@ -96,24 +105,9 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         verifyingOtp: false,
         otpSent: false,
         error: null,
+        savedPhoneNumber: phone,
       });
 
-      // Check profile and redirect appropriately
-      try {
-        const profile = await UserProfileService.getUserProfile();
-        const hasName = profile?.full_name?.trim();
-        const hasShopAddress = profile?.region && profile?.district && profile?.street_area;
-        
-        if (hasName && hasShopAddress) {
-          // Profile is complete, user will be redirected to main app
-          console.log('✅ Profile complete');
-        } else {
-          // Profile needs completion
-          console.log('❌ Profile incomplete, needs setup');
-        }
-      } catch (profileError) {
-        console.error('❌ Failed to check profile:', profileError);
-      }
     } catch (error) {
       console.error('❌ Unexpected OTP verification error:', error);
       set({
@@ -140,6 +134,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         loading: false,
         otpSent: false,
         verifyingOtp: false,
+        savedPhoneNumber: null,
       });
       console.log('✅ Signed out successfully');
     } catch (error) {
@@ -235,4 +230,36 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   setError: (error) => set({ error }),
   setOtpSent: (sent) => set({ otpSent: sent }),
   setVerifyingOtp: (verifying) => set({ verifyingOtp: verifying }),
-}));
+  setSavedPhoneNumber: (phone) => set({ savedPhoneNumber: phone }),
+
+  checkProfileCompletion: async () => {
+    try {
+      const profile = await UserProfileService.getUserProfile();
+      
+      if (!profile?.full_name?.trim()) {
+        console.log('❌ Profile incomplete: missing name');
+        return 'needs_name';
+      }
+      
+      if (!profile?.region || !profile?.district || !profile?.street_area) {
+        console.log('❌ Profile incomplete: missing shop address');
+        return 'needs_shop_address';
+      }
+      
+      console.log('✅ Profile complete');
+      return 'complete';
+    } catch (error) {
+      console.error('❌ Failed to check profile completion:', error);
+      return 'needs_name'; // Default to first step if error
+    }
+  },
+}),
+{
+  name: 'agrilink-auth',
+  storage: createJSONStorage(() => AsyncStorage),
+  partialize: (state) => ({
+    savedPhoneNumber: state.savedPhoneNumber,
+  }),
+}
+)
+);

@@ -3,13 +3,14 @@ import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { UserProfileService } from '@/services/userProfileService';
+import { useAuthStore } from '@/stores/authStore';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 
 export default function AuthCallback() {
   const router = useRouter();
   const { user } = useAuth();
+  const authStore = useAuthStore();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
 
   useEffect(() => {
@@ -21,28 +22,36 @@ export default function AuthCallback() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          console.log('✅ Session found for:', session.user.phone);
+          console.log('✅ Session found for:', session.user.phone || 'unknown');
           setStatus('success');
           
-          // Check if user has profile with name and shop address
+          // Save phone number to device
+          if (session.user.phone) {
+            authStore.setSavedPhoneNumber(session.user.phone);
+          }
+          
+          // Check profile completion status
           try {
-            const profile = await UserProfileService.getUserProfile();
-            console.log('🔍 User profile:', profile);
-            
-            const hasName = profile?.full_name?.trim();
-            const hasShopAddress = profile?.region && profile?.district && profile?.street_area;
+            const profileStatus = await authStore.checkProfileCompletion();
             
             setTimeout(() => {
-              if (hasName && hasShopAddress) {
-                console.log('✅ Profile complete, redirecting to main app');
-                router.replace('/(tabs)');
-              } else {
-                console.log('❌ Profile incomplete, redirecting to profile setup');
-                router.replace('/(onboarding)/profile-setup');
+              switch (profileStatus) {
+                case 'needs_name':
+                  console.log('🔄 Redirecting to profile setup (missing name)');
+                  router.replace('/(onboarding)/profile-setup');
+                  break;
+                case 'needs_shop_address':
+                  console.log('🔄 Redirecting to shop location (missing address)');
+                  router.replace('/(onboarding)/shop-location');
+                  break;
+                case 'complete':
+                  console.log('✅ Profile complete, redirecting to main app');
+                  router.replace('/(tabs)');
+                  break;
               }
             }, 1000);
           } catch (error) {
-            console.error('❌ Failed to check profile status:', error);
+            console.error('❌ Failed to check profile completion:', error);
             setTimeout(() => {
               router.replace('/(onboarding)/profile-setup');
             }, 1000);

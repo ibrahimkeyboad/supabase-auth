@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import Typography from '@/constants/Typography';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 
 interface OTPSignInFormProps {
   style?: any;
@@ -21,8 +23,16 @@ interface OTPSignInFormProps {
 
 export default function OTPSignInForm({ style }: OTPSignInFormProps) {
   const { signInWithOTP, verifyOTP, loading, verifyingOtp, otpSent, error, clearError } = useAuth();
-  const [phone, setPhone] = useState('');
+  const { savedPhoneNumber } = useAuthStore();
+  const [phone, setPhone] = useState(savedPhoneNumber || '');
   const [otpCode, setOtpCode] = useState('');
+
+  // Load saved phone number on component mount
+  useEffect(() => {
+    if (savedPhoneNumber && !phone) {
+      setPhone(savedPhoneNumber);
+    }
+  }, [savedPhoneNumber, phone]);
 
   const handleSendOTP = async () => {
     if (!phone.trim()) {
@@ -109,7 +119,6 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               placeholder="000000"
               leftIcon={<Lock size={20} color={Colors.neutral[500]} />}
               keyboardType="numeric"
-              maxLength={6}
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -132,7 +141,9 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
             <Button
               title="Change Phone"
               onPress={() => {
+                setPhone('');
                 setOtpCode('');
+                useAuthStore.getState().setOtpSent(false);
                 clearError();
               }}
               variant="text"

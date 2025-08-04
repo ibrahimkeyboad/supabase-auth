@@ -138,10 +138,34 @@ export class UserProfileService {
   static async hasCompletedOnboarding(): Promise<boolean> {
     try {
       const profile = await this.getUserProfile();
-      return profile?.onboarding_completed || false;
+      const hasName = !!profile?.full_name?.trim();
+      const hasShopAddress = !!(profile?.region && profile?.district && profile?.street_area);
+      return profile?.onboarding_completed && hasName && hasShopAddress;
     } catch (error) {
       console.error('Failed to check onboarding status:', error);
       return false;
+    }
+  }
+
+  /**
+   * Check profile completion status
+   */
+  static async getProfileCompletionStatus(): Promise<'complete' | 'needs_name' | 'needs_shop_address'> {
+    try {
+      const profile = await this.getUserProfile();
+      
+      if (!profile?.full_name?.trim()) {
+        return 'needs_name';
+      }
+      
+      if (!profile?.region || !profile?.district || !profile?.street_area) {
+        return 'needs_shop_address';
+      }
+      
+      return 'complete';
+    } catch (error) {
+      console.error('Failed to check profile completion status:', error);
+      return 'needs_name';
     }
   }
 

@@ -16,6 +16,7 @@ import Typography from '@/constants/Typography';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { useUpdateShopLocation } from '@/hooks/useUserProfile';
+import { useAuthStore } from '@/stores/authStore';
 
 const TANZANIA_REGIONS = [
   'Arusha', 'Dar es Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
@@ -61,7 +62,15 @@ export default function ShopLocationScreen() {
         street_area: formData.streetArea,
       });
       
-      router.replace('/(onboarding)/shop-details');
+      // Check if we need shop details or can go to main app
+      const authStore = useAuthStore.getState();
+      const profileStatus = await authStore.checkProfileCompletion();
+      
+      if (profileStatus === 'complete') {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/(onboarding)/shop-details');
+      }
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to save location. Please try again.');
     }

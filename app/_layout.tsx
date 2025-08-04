@@ -36,14 +36,45 @@ function RootLayoutNav() {
       inTabsGroup,
     });
 
-    // If user is not authenticated and not in auth group, redirect to auth
-    if (!user && !inAuthGroup) {
-      console.log('🔄 Redirecting to auth (no user)');
-      router.replace('/(onboarding)/auth');
-    }
-    // If user is authenticated but in auth group, let auth callback handle routing
-    // This prevents premature redirects during the auth flow
-  }, [user, segments, initialized, loading]);
+    const handleNavigation = async () => {
+      // If user is not authenticated and not in auth group, redirect to auth
+      if (!user && !inAuthGroup) {
+        console.log('🔄 Redirecting to auth (no user)');
+        router.replace('/(onboarding)/auth');
+        return;
+      }
+
+      // If user is authenticated, check profile completion
+      if (user && !inAuthGroup) {
+        try {
+          const authStore = useAuthStore.getState();
+          const profileStatus = await authStore.checkProfileCompletion();
+          
+          switch (profileStatus) {
+            case 'needs_name':
+              console.log('🔄 Redirecting to profile setup (missing name)');
+              router.replace('/(onboarding)/profile-setup');
+              break;
+            case 'needs_shop_address':
+              console.log('🔄 Redirecting to shop location (missing address)');
+              router.replace('/(onboarding)/shop-location');
+              break;
+            case 'complete':
+              if (!inTabsGroup) {
+                console.log('🔄 Redirecting to main app (profile complete)');
+                router.replace('/(tabs)');
+              }
+              break;
+          }
+        } catch (error) {
+          console.error('❌ Error checking profile completion:', error);
+          router.replace('/(onboarding)/profile-setup');
+        }
+      }
+    };
+
+    handleNavigation();
+  }, [user, segments, initialized, loading, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

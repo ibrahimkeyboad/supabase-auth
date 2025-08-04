@@ -16,6 +16,7 @@ import Typography from '@/constants/Typography';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { useUpdateShopDetails, useCompleteOnboarding } from '@/hooks/useUserProfile';
+import { useAuthStore } from '@/stores/authStore';
 
 const SHOP_TYPES = [
   'Agrovet Shop',
@@ -70,6 +71,9 @@ export default function ShopDetailsScreen() {
 
       // Mark onboarding as completed
       await completeOnboardingMutation.mutateAsync();
+      
+      // Clear any saved phone number since profile is now complete
+      useAuthStore.getState().setSavedPhoneNumber(null);
       
       // Redirect to main app
       router.replace('/(tabs)');
