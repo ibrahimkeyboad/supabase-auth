@@ -73,6 +73,7 @@ export const useAuthStore = create<AuthStore>()(
         loading: false,
         otpSent: true,
         error: null,
+        savedPhoneNumber: phone,
       });
     } catch (error) {
       console.error('❌ Unexpected OTP error:', error);
@@ -101,7 +102,11 @@ export const useAuthStore = create<AuthStore>()(
       }
 
       console.log('✅ OTP verified successfully');
+      console.log('💾 Session data:', data.session?.user?.phone);
+      
       set({
+        user: data.session?.user || null,
+        session: data.session || null,
         verifyingOtp: false,
         otpSent: false,
         error: null,
@@ -134,7 +139,6 @@ export const useAuthStore = create<AuthStore>()(
         loading: false,
         otpSent: false,
         verifyingOtp: false,
-        savedPhoneNumber: null,
       });
       console.log('✅ Signed out successfully');
     } catch (error) {
@@ -197,6 +201,10 @@ export const useAuthStore = create<AuthStore>()(
                 '✅ User signed in successfully:',
                 session?.user?.phone || session?.user?.email
               );
+              // Save phone number when user signs in
+              if (session?.user?.phone) {
+                set({ savedPhoneNumber: session.user.phone });
+              }
               break;
             case 'SIGNED_OUT':
               console.log('👋 User signed out');
@@ -258,6 +266,8 @@ export const useAuthStore = create<AuthStore>()(
   name: 'agrilink-auth',
   storage: createJSONStorage(() => AsyncStorage),
   partialize: (state) => ({
+    user: state.user,
+    session: state.session,
     savedPhoneNumber: state.savedPhoneNumber,
   }),
 }

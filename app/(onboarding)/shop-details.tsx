@@ -73,7 +73,8 @@ export default function ShopDetailsScreen() {
       await completeOnboardingMutation.mutateAsync();
       
       // Clear any saved phone number since profile is now complete
-      useAuthStore.getState().setSavedPhoneNumber(null);
+      const authStore = useAuthStore.getState();
+      authStore.setSavedPhoneNumber(null);
       
       // Redirect to main app
       router.replace('/(tabs)');
