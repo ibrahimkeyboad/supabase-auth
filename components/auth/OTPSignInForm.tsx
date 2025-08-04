@@ -143,7 +143,8 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               onPress={() => {
                 setPhone('');
                 setOtpCode('');
-                useAuthStore.getState().setOtpSent(false);
+                const authStore = useAuthStore.getState();
+                authStore.setOtpSent(false);
                 clearError();
               }}
               variant="text"
