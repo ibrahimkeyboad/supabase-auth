@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { AuthService } from '@/lib/auth';
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
@@ -139,6 +140,7 @@ export const useAuthStore = create<AuthStore>()(
         loading: false,
         otpSent: false,
         verifyingOtp: false,
+        savedPhoneNumber: null,
       });
       console.log('✅ Signed out successfully');
     } catch (error) {
@@ -208,6 +210,7 @@ export const useAuthStore = create<AuthStore>()(
               break;
             case 'SIGNED_OUT':
               console.log('👋 User signed out');
+              set({ savedPhoneNumber: null });
               break;
             case 'TOKEN_REFRESHED':
               console.log('🔄 Token refreshed for user:', session?.user?.phone || session?.user?.email);
@@ -264,7 +267,7 @@ export const useAuthStore = create<AuthStore>()(
 }),
 {
   name: 'agrilink-auth',
-  storage: createJSONStorage(() => AsyncStorage),
+  storage: createJSONStorage(() => Platform.OS === 'web' ? localStorage : AsyncStorage),
   partialize: (state) => ({
     user: state.user,
     session: state.session,
