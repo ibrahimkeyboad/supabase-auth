@@ -17,6 +17,8 @@ interface AuthState {
   otpSent: boolean;
   verifyingOtp: boolean;
   savedPhoneNumber: string | null;
+  otpCooldown: number; // Timestamp when cooldown ends
+  resendCount: number; // Number of times OTP has been resent
 }
 
 interface AuthActions {
@@ -33,6 +35,9 @@ interface AuthActions {
   setVerifyingOtp: (verifying: boolean) => void;
   setSavedPhoneNumber: (phone: string | null) => void;
   checkProfileCompletion: () => Promise<'complete' | 'needs_name' | 'needs_shop_address'>;
+  canResendOTP: () => boolean;
+  getResendCooldownTime: () => number;
+  resetOTPState: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -50,9 +55,27 @@ export const useAuthStore = create<AuthStore>()(
   otpSent: false,
   verifyingOtp: false,
   savedPhoneNumber: null,
+  otpCooldown: 0,
+  resendCount: 0,
 
   // Actions
   signInWithOTP: async (phone: string) => {
+    const state = get();
+    
+    // Check if user can resend OTP
+    if (!state.canResendOTP()) {
+      const remainingTime = Math.ceil((state.otpCooldown - Date.now()) / 1000);
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      const timeString = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+      
+      set({
+        error: `Please wait ${timeString} before requesting another code`,
+        loading: false,
+      });
+      return;
+    }
+
     try {
       set({ loading: true, error: null });
       console.log('🚀 Starting OTP sign-in for:', phone);
@@ -70,11 +93,20 @@ export const useAuthStore = create<AuthStore>()(
       }
 
       console.log('✅ OTP sent successfully');
+      
+      // Set cooldown based on resend count
+      const currentResendCount = state.resendCount;
+      const cooldownDuration = currentResendCount === 0 
+        ? 60 * 1000 // 1 minute for first resend
+        : 6 * 60 * 60 * 1000; // 6 hours for subsequent resends
+      
       set({
         loading: false,
         otpSent: true,
         error: null,
         savedPhoneNumber: phone,
+        otpCooldown: Date.now() + cooldownDuration,
+        resendCount: currentResendCount + 1,
       });
     } catch (error) {
       console.error('❌ Unexpected OTP error:', error);
@@ -112,6 +144,8 @@ export const useAuthStore = create<AuthStore>()(
         otpSent: false,
         error: null,
         savedPhoneNumber: phone,
+        resendCount: 0, // Reset resend count on successful verification
+        otpCooldown: 0,
       });
 
     } catch (error) {
@@ -141,6 +175,8 @@ export const useAuthStore = create<AuthStore>()(
         otpSent: false,
         verifyingOtp: false,
         savedPhoneNumber: null,
+        resendCount: 0,
+        otpCooldown: 0,
       });
       console.log('✅ Signed out successfully');
     } catch (error) {
@@ -153,7 +189,7 @@ export const useAuthStore = create<AuthStore>()(
   },
 
   clearError: () => {
-    set({ error: null, otpSent: false, verifyingOtp: false });
+    set({ error: null });
   },
 
   initialize: async () => {
@@ -242,6 +278,26 @@ export const useAuthStore = create<AuthStore>()(
   setOtpSent: (sent) => set({ otpSent: sent }),
   setVerifyingOtp: (verifying) => set({ verifyingOtp: verifying }),
   setSavedPhoneNumber: (phone) => set({ savedPhoneNumber: phone }),
+  
+  canResendOTP: () => {
+    const state = get();
+    return Date.now() >= state.otpCooldown;
+  },
+  
+  getResendCooldownTime: () => {
+    const state = get();
+    return Math.max(0, state.otpCooldown - Date.now());
+  },
+  
+  resetOTPState: () => {
+    set({ 
+      otpSent: false, 
+      verifyingOtp: false, 
+      resendCount: 0, 
+      otpCooldown: 0,
+      error: null 
+    });
+  },
 
   checkProfileCompletion: async () => {
     try {
@@ -272,6 +328,8 @@ export const useAuthStore = create<AuthStore>()(
     user: state.user,
     session: state.session,
     savedPhoneNumber: state.savedPhoneNumber,
+      resendCount: state.resendCount,
+      otpCooldown: state.otpCooldown,
   }),
 }
 )

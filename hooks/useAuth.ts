@@ -11,5 +11,9 @@ export function useAuth() {
     }
   }, [store.initialized, store.initialize]);
 
-  return store;
+  return {
+    ...store,
+    canResendOTP: store.canResendOTP,
+    getResendCooldownTime: store.getResendCooldownTime,
+  };
 }

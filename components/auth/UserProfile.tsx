@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { LogOut, User as UserIcon } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -19,6 +20,7 @@ interface UserProfileProps {
 
 export default function UserProfile({ showSignOut = true, style }: UserProfileProps) {
   const { user, signOut, loading } = useAuth();
+  const { data: userProfile, isLoading: profileLoading } = useUserProfile();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -39,15 +41,11 @@ export default function UserProfile({ showSignOut = true, style }: UserProfilePr
     return null;
   }
 
-  const displayName = user.user_metadata?.full_name || 
-                     user.user_metadata?.name || 
-                     user.phone || 
-                     'User';
+  // Get name from user_profiles table, fallback to phone
+  const displayName = userProfile?.full_name || user.phone || 'User';
 
-  // Try to get avatar from user profile or fallback to auth metadata
-  const avatarUrl = user.user_metadata?.profile_image_url || 
-                   user.user_metadata?.avatar_url || 
-                   user.user_metadata?.picture;
+  // Get avatar from user_profiles table
+  const avatarUrl = userProfile?.profile_image_url;
 
   return (
     <View style={[styles.container, style]}>

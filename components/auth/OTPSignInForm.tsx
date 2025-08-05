@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,10 +22,12 @@ interface OTPSignInFormProps {
 }
 
 export default function OTPSignInForm({ style }: OTPSignInFormProps) {
-  const { signInWithOTP, verifyOTP, loading, verifyingOtp, otpSent, error, clearError } = useAuth();
-  const { savedPhoneNumber } = useAuthStore();
+  const { signInWithOTP, verifyOTP, loading, verifyingOtp, otpSent, error, clearError, canResendOTP, getResendCooldownTime } = useAuth();
+  const { savedPhoneNumber, resetOTPState } = useAuthStore();
   const [phone, setPhone] = useState(savedPhoneNumber || '');
   const [otpCode, setOtpCode] = useState('');
+  const [cooldownTime, setCooldownTime] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load saved phone number on component mount
   useEffect(() => {
@@ -34,6 +36,33 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
     }
   }, [savedPhoneNumber, phone]);
 
+  // Update cooldown timer
+  useEffect(() => {
+    if (otpSent && !canResendOTP()) {
+      const updateCooldown = () => {
+        const remaining = getResendCooldownTime();
+        setCooldownTime(Math.ceil(remaining / 1000));
+        
+        if (remaining <= 0) {
+          setCooldownTime(0);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+        }
+      };
+      
+      updateCooldown();
+      intervalRef.current = setInterval(updateCooldown, 1000);
+    }
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [otpSent, canResendOTP, getResendCooldownTime]);
   const handleSendOTP = async () => {
     if (!phone.trim()) {
       Alert.alert('Error', 'Please enter your phone number');
@@ -74,6 +103,20 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
     await signInWithOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone);
   };
 
+  const formatCooldownTime = (seconds: number) => {
+    if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hours}h ${minutes}m ${secs}s`;
+    } else if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  };
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -130,21 +173,28 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               style={styles.verifyButton}
             />
 
-            <Button
-              title="Resend Code"
-              onPress={handleResendOTP}
-              variant="text"
-              disabled={loading}
-              style={styles.resendButton}
-            />
+            {canResendOTP() ? (
+              <Button
+                title="Resend Code"
+                onPress={handleResendOTP}
+                variant="text"
+                disabled={loading}
+                style={styles.resendButton}
+              />
+            ) : (
+              <View style={styles.cooldownContainer}>
+                <Text style={styles.cooldownText}>
+                  Resend code in {formatCooldownTime(cooldownTime)}
+                </Text>
+              </View>
+            )}
 
             <Button
               title="Change Phone"
               onPress={() => {
                 setPhone('');
                 setOtpCode('');
-                const authStore = useAuthStore.getState();
-                authStore.setOtpSent(false);
+                resetOTPState();
                 clearError();
               }}
               variant="text"
@@ -194,6 +244,17 @@ const styles = StyleSheet.create({
   resendButton: {
     width: '100%',
     marginTop: 16,
+  },
+  cooldownContainer: {
+    width: '100%',
+    marginTop: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  cooldownText: {
+    ...Typography.body,
+    color: Colors.neutral[600],
+    textAlign: 'center',
   },
   changePhoneButton: {
     width: '100%',
