@@ -63,8 +63,9 @@ export default function ShopLocationScreen() {
       });
       
       // Check if we need shop details or can go to main app
-      const authStore = useAuthStore.getState();
-      const profileStatus = await authStore.checkProfileCompletion();
+      const profileStatus = await useAuthStore.getState().checkProfileCompletion();
+      
+      console.log('📊 Shop location - next step:', profileStatus);
       
       if (profileStatus === 'complete') {
         router.replace('/(tabs)');

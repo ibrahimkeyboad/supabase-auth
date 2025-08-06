@@ -301,7 +301,37 @@ export const useAuthStore = create<AuthStore>()(
 
   checkProfileCompletion: async () => {
     try {
-      const profile = await UserProfileService.getUserProfile();
+      const user = get().user;
+      if (!user) {
+        console.log('❌ No authenticated user found');
+        return 'needs_name';
+      }
+
+      console.log('🔍 Checking profile completion for user:', user.id);
+      
+      // Fetch user profile from database
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No profile found
+          console.log('❌ No profile found in database');
+          return 'needs_name';
+        }
+        console.error('❌ Error fetching profile:', error);
+        return 'needs_name';
+      }
+
+      console.log('📋 Profile data:', {
+        full_name: profile?.full_name,
+        region: profile?.region,
+        district: profile?.district,
+        street_area: profile?.street_area,
+      });
       
       if (!profile?.full_name?.trim()) {
         console.log('❌ Profile incomplete: missing name');
@@ -309,7 +339,11 @@ export const useAuthStore = create<AuthStore>()(
       }
       
       if (!profile?.region || !profile?.district || !profile?.street_area) {
-        console.log('❌ Profile incomplete: missing shop address');
+        console.log('❌ Profile incomplete: missing shop address', {
+          region: profile?.region,
+          district: profile?.district,
+          street_area: profile?.street_area,
+        });
         return 'needs_shop_address';
       }
       

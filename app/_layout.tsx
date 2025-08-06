@@ -48,8 +48,9 @@ function RootLayoutNav() {
       // If user is authenticated, check profile completion
       if (user && !inAuthGroup) {
         try {
-          const authStore = useAuthStore.getState();
-          const profileStatus = await authStore.checkProfileCompletion();
+          const profileStatus = await useAuthStore.getState().checkProfileCompletion();
+          
+          console.log('📊 Profile status:', profileStatus);
           
           switch (profileStatus) {
             case 'needs_name':

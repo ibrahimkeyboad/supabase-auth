@@ -142,8 +142,9 @@ export default function ProfileSetupScreen() {
       console.log('✅ Profile updated successfully');
       
       // Check if shop address is already complete
-      const authStore = useAuthStore.getState();
-      const profileStatus = await authStore.checkProfileCompletion();
+      const profileStatus = await useAuthStore.getState().checkProfileCompletion();
+      
+      console.log('📊 Profile setup - next step:', profileStatus);
       
       if (profileStatus === 'needs_shop_address') {
         router.replace('/(onboarding)/shop-location');

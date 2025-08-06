@@ -32,7 +32,9 @@ export default function AuthCallback() {
           
           // Check profile completion status
           try {
-            const profileStatus = await authStore.checkProfileCompletion();
+            const profileStatus = await useAuthStore.getState().checkProfileCompletion();
+            
+            console.log('📊 Auth callback profile status:', profileStatus);
             
             setTimeout(() => {
               switch (profileStatus) {
