@@ -5,7 +5,6 @@ import { useRouter, useSegments } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore } from '@/stores/authStore';
 import { useFonts } from 'expo-font';
 import {
   Inter_400Regular,
@@ -15,12 +14,13 @@ import {
 } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
-  const { user, initialized, loading } = useAuth();
+  const { user, initialized, loading, checkProfileCompletion } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -48,7 +48,7 @@ function RootLayoutNav() {
       // If user is authenticated, check profile completion
       if (user && !inAuthGroup) {
         try {
-          const profileStatus = await useAuthStore.getState().checkProfileCompletion();
+          const profileStatus = await checkProfileCompletion();
           
           console.log('📊 Profile status:', profileStatus);
           

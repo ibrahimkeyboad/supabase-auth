@@ -14,19 +14,38 @@ const createStorageAdapter = () => {
   if (Platform.OS === 'web') {
     return {
       getItem: (key: string) => {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          return window.localStorage.getItem(key);
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            return Promise.resolve(window.localStorage.getItem(key));
+          }
+          return Promise.resolve(null);
+        } catch (error) {
+          console.error('localStorage getItem error:', error);
+          return Promise.resolve(null);
         }
-        return null;
       },
       setItem: (key: string, value: string) => {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem(key, value);
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.setItem(key, value);
+            return Promise.resolve();
+          }
+          return Promise.resolve();
+        } catch (error) {
+          console.error('localStorage setItem error:', error);
+          return Promise.resolve();
         }
       },
       removeItem: (key: string) => {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.removeItem(key);
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.removeItem(key);
+            return Promise.resolve();
+          }
+          return Promise.resolve();
+        } catch (error) {
+          console.error('localStorage removeItem error:', error);
+          return Promise.resolve();
         }
       },
     };

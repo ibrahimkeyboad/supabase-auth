@@ -15,5 +15,6 @@ export function useAuth() {
     ...store,
     canResendOTP: store.canResendOTP,
     getResendCooldownTime: store.getResendCooldownTime,
+    checkProfileCompletion: store.checkProfileCompletion,
   };
 }
