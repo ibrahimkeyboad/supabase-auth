@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MapPin, ChevronDown } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -89,7 +89,7 @@ export default function ShopLocationScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <MapPin size={24} color={Colors.primary[700]} />
+              <Ionicons name="location" size={24} color={Colors.primary[700]} />
             </View>
             <Text style={styles.title}>Shop Location</Text>
             <Text style={styles.subtitle}>
@@ -112,7 +112,7 @@ export default function ShopLocationScreen() {
                 ]}>
                   {formData.region || 'Select your region'}
                 </Text>
-                <ChevronDown size={20} color={Colors.neutral[500]} />
+                <Ionicons name="chevron-down" size={20} color={Colors.neutral[500]} />
               </TouchableOpacity>
               
               {showRegionPicker && (

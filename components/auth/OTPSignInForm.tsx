@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Phone, Lock } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -135,7 +135,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               value={phone}
               onChangeText={setPhone}
               placeholder="+255712345678 or 0712345678"
-              leftIcon={<Phone size={20} color={Colors.neutral[500]} />}
+              leftIcon={<Ionicons name="call" size={20} color={Colors.neutral[500]} />}
               keyboardType="phone-pad"
               autoCapitalize="none"
               autoCorrect={false}
@@ -160,7 +160,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               value={otpCode}
               onChangeText={setOtpCode}
               placeholder="000000"
-              leftIcon={<Lock size={20} color={Colors.neutral[500]} />}
+              leftIcon={<Ionicons name="lock-closed" size={20} color={Colors.neutral[500]} />}
               keyboardType="numeric"
               autoCapitalize="none"
               autoCorrect={false}

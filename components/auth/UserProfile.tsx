@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { LogOut, User as UserIcon } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 
@@ -55,7 +55,7 @@ export default function UserProfile({ showSignOut = true, style }: UserProfilePr
             <Image source={{ uri: avatarUrl }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <UserIcon size={24} color={Colors.neutral[600]} />
+              <Ionicons name="person" size={24} color={Colors.neutral[600]} />
             </View>
           )}
         </View>
@@ -74,7 +74,7 @@ export default function UserProfile({ showSignOut = true, style }: UserProfilePr
           onPress={handleSignOut}
           disabled={loading}
         >
-          <LogOut size={20} color={Colors.error[600]} />
+          <Ionicons name="log-out" size={20} color={Colors.error[600]} />
         </TouchableOpacity>
       )}
     </View>

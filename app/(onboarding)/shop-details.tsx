@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Store, ChevronDown } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -99,7 +99,7 @@ export default function ShopDetailsScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Store size={24} color={Colors.primary[700]} />
+              <Ionicons name="storefront" size={24} color={Colors.primary[700]} />
             </View>
             <Text style={styles.title}>Agrovet Shop Details</Text>
             <Text style={styles.subtitle}>
@@ -130,7 +130,7 @@ export default function ShopDetailsScreen() {
                 ]}>
                   {formData.shopType || 'select shop type'}
                 </Text>
-                <ChevronDown size={20} color={Colors.neutral[500]} />
+                <Ionicons name="chevron-down" size={20} color={Colors.neutral[500]} />
               </TouchableOpacity>
               
               {showShopTypePicker && (
@@ -163,7 +163,7 @@ export default function ShopDetailsScreen() {
                 ]}>
                   {formData.businessSize || 'Select business size'}
                 </Text>
-                <ChevronDown size={20} color={Colors.neutral[500]} />
+                <Ionicons name="chevron-down" size={20} color={Colors.neutral[500]} />
               </TouchableOpacity>
               
               {showBusinessSizePicker && (

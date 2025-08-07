@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Camera, Upload } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 import Colors from '@/constants/Colors';
@@ -166,7 +166,7 @@ export default function ProfileSetupScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <User size={24} color={Colors.primary[700]} />
+              <Ionicons name="person" size={24} color={Colors.primary[700]} />
             </View>
             <Text style={styles.title}>Complete Your Profile</Text>
             <Text style={styles.subtitle}>
@@ -185,15 +185,15 @@ export default function ProfileSetupScreen() {
                 <Image source={{ uri: formData.profileImage }} style={styles.profileImage} />
               ) : (
                 <View style={styles.imagePlaceholder}>
-                  <User size={40} color={Colors.neutral[400]} />
+                  <Ionicons name="person" size={40} color={Colors.neutral[400]} />
                 </View>
               )}
               
               <View style={styles.cameraButton}>
                 {uploadingImage ? (
-                  <Upload size={16} color={Colors.white} />
+                  <Ionicons name="cloud-upload" size={16} color={Colors.white} />
                 ) : (
-                  <Camera size={16} color={Colors.white} />
+                  <Ionicons name="camera" size={16} color={Colors.white} />
                 )}
               </View>
             </TouchableOpacity>
@@ -210,7 +210,7 @@ export default function ProfileSetupScreen() {
               value={formData.fullName}
               onChangeText={(text) => setFormData({ ...formData, fullName: text })}
               placeholder="Enter your full name"
-              leftIcon={<User size={20} color={Colors.neutral[500]} />}
+              leftIcon={<Ionicons name="person" size={20} color={Colors.neutral[500]} />}
               autoCapitalize="words"
             />
           </View>

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface InputProps {
   label?: string;
@@ -105,9 +105,9 @@ export default function Input({
             onPress={togglePasswordVisibility}
           >
             {isPasswordVisible ? (
-              <EyeOff size={20} color={Colors.neutral[600]} />
+              <Ionicons name="eye-off" size={20} color={Colors.neutral[600]} />
             ) : (
-              <Eye size={20} color={Colors.neutral[600]} />
+              <Ionicons name="eye" size={20} color={Colors.neutral[600]} />
             )}
           </TouchableOpacity>
         ) : (
