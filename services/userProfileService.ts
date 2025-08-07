@@ -125,7 +125,7 @@ export class UserProfileService {
    */
   static async completeOnboarding(): Promise<void> {
     try {
-      await UserProfileService.updateUserProfile({ onboarding_completed: true });
+      await this.updateUserProfile({ onboarding_completed: true });
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
       throw error;

@@ -62,14 +62,20 @@ export default function ShopLocationScreen() {
         street_area: formData.streetArea,
       });
       
-      // Check if we need shop details or can go to main app
-      const profileStatus = await useAuthStore.getState().checkProfileCompletion();
+      // Check if user already has shop details
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('shop_name, shop_type')
+        .eq('id', user?.id)
+        .single();
       
-      console.log('📊 Shop location - next step:', profileStatus);
-      
-      if (profileStatus === 'complete') {
+      if (profile?.shop_name && profile?.shop_type) {
+        // User already has shop details, go to main app
+        console.log('✅ Shop details already complete, going to main app');
         router.replace('/(tabs)');
       } else {
+        // User needs to add shop details
+        console.log('🔄 Redirecting to shop details');
         router.replace('/(onboarding)/shop-details');
       }
     } catch (error) {

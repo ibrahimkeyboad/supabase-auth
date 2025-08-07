@@ -141,16 +141,8 @@ export default function ProfileSetupScreen() {
 
       console.log('✅ Profile updated successfully');
       
-      // Check if shop address is already complete
-      const profileStatus = await useAuthStore.getState().checkProfileCompletion();
-      
-      console.log('📊 Profile setup - next step:', profileStatus);
-      
-      if (profileStatus === 'needs_shop_address') {
-        router.replace('/(onboarding)/shop-location');
-      } else {
-        router.replace('/(tabs)');
-      }
+      // Always go to shop location after profile setup
+      router.replace('/(onboarding)/shop-location');
     } catch (error) {
       console.error('❌ Profile update error:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to save profile. Please try again.');

@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, Settings, MapPin, CreditCard, Bell, CircleHelp as HelpCircle, ChevronRight, Package, ChartBar as BarChart, Store } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -24,17 +24,17 @@ export default function ProfileScreen() {
       title: 'Account',
       items: [
         {
-          icon: <User size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="person" size={20} color={Colors.neutral[700]} />,
           label: 'Personal Information',
           onPress: () => router.push('/profile/personal'),
         },
         {
-          icon: <Store size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="storefront" size={20} color={Colors.neutral[700]} />,
           label: 'My Shop Address', 
           onPress: () => router.push('/profile/addresses'),
         },
         {
-          icon: <CreditCard size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="card" size={20} color={Colors.neutral[700]} />,
           label: 'Payment Methods',
           onPress: () => router.push('/profile/payment'),
         },
@@ -44,12 +44,12 @@ export default function ProfileScreen() {
       title: 'Activities',
       items: [
         {
-          icon: <Package size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="receipt" size={20} color={Colors.neutral[700]} />,
           label: 'Order History',
           onPress: () => router.push('/profile/orders'),
         },
         {
-          icon: <BarChart size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="bar-chart" size={20} color={Colors.neutral[700]} />,
           label: 'Purchase Analytics',
           onPress: () => router.push('/profile/analytics'),
         },
@@ -59,27 +59,27 @@ export default function ProfileScreen() {
       title: 'Preferences',
       items: [
         {
-          icon: <Bell size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="notifications" size={20} color={Colors.neutral[700]} />,
           label: 'Notifications',
           onPress: () => router.push('/profile/notifications'),
         },
         {
-          icon: <Settings size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="settings" size={20} color={Colors.neutral[700]} />,
           label: 'Settings',
           onPress: () => router.push('/profile/settings'),
         },
         {
-          icon: <HelpCircle size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="help-circle" size={20} color={Colors.neutral[700]} />,
           label: 'Help & Support',
           onPress: () => router.push('/profile/help'),
         },
         {
-          icon: <HelpCircle size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="document-text" size={20} color={Colors.neutral[700]} />,
           label: 'Terms & Conditions',
           onPress: () => router.push('/legal/terms'),
         },
         {
-          icon: <HelpCircle size={20} color={Colors.neutral[700]} />,
+          icon: <Ionicons name="shield-checkmark" size={20} color={Colors.neutral[700]} />,
           label: 'Privacy Policy',
           onPress: () => router.push('/legal/privacy'),
         },
@@ -117,7 +117,7 @@ export default function ProfileScreen() {
                       <View style={styles.menuItemIcon}>{item.icon}</View>
                       <Text style={styles.menuItemLabel}>{item.label}</Text>
                     </View>
-                    <ChevronRight size={20} color={Colors.neutral[400]} />
+                    <Ionicons name="chevron-forward" size={20} color={Colors.neutral[400]} />
                   </TouchableOpacity>
                 ))}
               </Card>

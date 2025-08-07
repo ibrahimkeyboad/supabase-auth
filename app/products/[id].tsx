@@ -11,16 +11,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import {
-  ArrowLeft,
-  Heart,
-  Share2,
-  Star,
-  ShoppingCart,
-  Truck,
-  ShieldCheck,
-  RefreshCw,
-  ChevronRight,
-} from 'lucide-react-native';
+  Ionicons,
+} from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -104,21 +96,21 @@ export default function ProductDetailScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <ArrowLeft size={24} color={Colors.neutral[800]} />
+            <Ionicons name="arrow-back" size={24} color={Colors.neutral[800]} />
           </TouchableOpacity>
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.iconButton}
               onPress={toggleFavorite}
             >
-              <Heart
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
                 size={24}
                 color={isFavorite ? Colors.error[500] : Colors.neutral[800]}
-                fill={isFavorite ? Colors.error[500] : 'none'}
               />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
-              <Share2 size={24} color={Colors.neutral[800]} />
+              <Ionicons name="share-outline" size={24} color={Colors.neutral[800]} />
             </TouchableOpacity>
           </View>
         </View>
@@ -147,18 +139,14 @@ export default function ProductDetailScreen() {
             <View style={styles.ratingContainer}>
               <View style={styles.ratingStars}>
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
+                  <Ionicons
                     key={star}
+                    name={star <= Math.floor(product.rating) ? "star" : "star-outline"}
                     size={16}
                     color={
                       star <= Math.floor(product.rating)
                         ? Colors.warning[500]
                         : Colors.neutral[300]
-                    }
-                    fill={
-                      star <= Math.floor(product.rating)
-                        ? Colors.warning[500]
-                        : 'none'
                     }
                   />
                 ))}
@@ -271,15 +259,15 @@ export default function ProductDetailScreen() {
 
             <View style={styles.features}>
               <View style={styles.featureItem}>
-                <Truck size={20} color={Colors.primary[700]} />
+                <Ionicons name="car" size={20} color={Colors.primary[700]} />
                 <Text style={styles.featureText}>Free delivery for orders above TSh 100,000</Text>
               </View>
               <View style={styles.featureItem}>
-                <ShieldCheck size={20} color={Colors.primary[700]} />
+                <Ionicons name="shield-checkmark" size={20} color={Colors.primary[700]} />
                 <Text style={styles.featureText}>Genuine product guarantee</Text>
               </View>
               <View style={styles.featureItem}>
-                <RefreshCw size={20} color={Colors.primary[700]} />
+                <Ionicons name="refresh" size={20} color={Colors.primary[700]} />
                 <Text style={styles.featureText}>7-day return policy</Text>
               </View>
             </View>

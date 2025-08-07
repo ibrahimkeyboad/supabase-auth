@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +6,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -28,6 +28,8 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
   const [otpCode, setOtpCode] = useState('');
   const [cooldownTime, setCooldownTime] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const otpInputRefs = useRef<(TextInput | null)[]>([]);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
 
   // Load saved phone number on component mount
   useEffect(() => {
@@ -63,6 +65,16 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
       }
     };
   }, [otpSent, canResendOTP, getResendCooldownTime]);
+
+  // Auto-verify when all 6 digits are entered
+  useEffect(() => {
+    const fullOtp = otpDigits.join('');
+    if (fullOtp.length === 6 && /^\d{6}$/.test(fullOtp)) {
+      setOtpCode(fullOtp);
+      handleVerifyOTP(fullOtp);
+    }
+  }, [otpDigits]);
+
   const handleSendOTP = async () => {
     if (!phone.trim()) {
       Alert.alert('Error', 'Please enter your phone number');
@@ -83,24 +95,47 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
     await signInWithOTP(normalizedPhone);
   };
 
-  const handleVerifyOTP = async () => {
-    if (!otpCode.trim()) {
+  const handleVerifyOTP = async (otp?: string) => {
+    const codeToVerify = otp || otpCode;
+    
+    if (!codeToVerify.trim()) {
       Alert.alert('Error', 'Please enter the OTP code');
       return;
     }
 
-    if (otpCode.length !== 6) {
+    if (codeToVerify.length !== 6) {
       Alert.alert('Error', 'OTP code must be 6 digits');
       return;
     }
 
     clearError();
-    await verifyOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone, otpCode);
+    await verifyOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone, codeToVerify);
   };
 
   const handleResendOTP = async () => {
     clearError();
     await signInWithOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone);
+  };
+
+  const handleOtpDigitChange = (digit: string, index: number) => {
+    // Only allow numeric input
+    if (!/^\d*$/.test(digit)) return;
+
+    const newOtpDigits = [...otpDigits];
+    newOtpDigits[index] = digit;
+    setOtpDigits(newOtpDigits);
+
+    // Auto-focus next input
+    if (digit && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyPress = (key: string, index: number) => {
+    if (key === 'Backspace' && !otpDigits[index] && index > 0) {
+      // Focus previous input on backspace if current is empty
+      otpInputRefs.current[index - 1]?.focus();
+    }
   };
 
   const formatCooldownTime = (seconds: number) => {
@@ -117,6 +152,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
       return `${seconds}s`;
     }
   };
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -155,23 +191,36 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               We've sent a 6-digit code to {phone}
             </Text>
 
-            <Input
-              label="Verification Code"
-              value={otpCode}
-              onChangeText={setOtpCode}
-              placeholder="000000"
-              leftIcon={<Ionicons name="lock-closed" size={20} color={Colors.neutral[500]} />}
-              keyboardType="numeric"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <Button
-              title="Verify Code"
-              onPress={handleVerifyOTP}
-              loading={verifyingOtp}
-              style={styles.verifyButton}
-            />
+            {/* Custom OTP Input */}
+            <View style={styles.otpContainer}>
+              <Text style={styles.otpLabel}>Verification Code</Text>
+              <View style={styles.otpInputContainer}>
+                {otpDigits.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => (otpInputRefs.current[index] = ref)}
+                    style={[
+                      styles.otpInput,
+                      digit && styles.otpInputFilled,
+                      error && styles.otpInputError,
+                    ]}
+                    value={digit}
+                    onChangeText={(text) => handleOtpDigitChange(text, index)}
+                    onKeyPress={({ nativeEvent }) => handleOtpKeyPress(nativeEvent.key, index)}
+                    keyboardType="numeric"
+                    maxLength={1}
+                    selectTextOnFocus
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </View>
+              {verifyingOtp && (
+                <View style={styles.verifyingContainer}>
+                  <Ionicons name="checkmark-circle" size={16} color={Colors.success[600]} />
+                  <Text style={styles.verifyingText}>Verifying code...</Text>
+                </View>
+              )}
+            </View>
 
             {canResendOTP() ? (
               <Button
@@ -183,6 +232,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
               />
             ) : (
               <View style={styles.cooldownContainer}>
+                <Ionicons name="time" size={16} color={Colors.neutral[500]} />
                 <Text style={styles.cooldownText}>
                   Resend code in {formatCooldownTime(cooldownTime)}
                 </Text>
@@ -190,9 +240,10 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
             )}
 
             <Button
-              title="Change Phone"
+              title="Change Phone Number"
               onPress={() => {
                 setPhone('');
+                setOtpDigits(['', '', '', '', '', '']);
                 setOtpCode('');
                 resetOTPState();
                 clearError();
@@ -205,6 +256,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
 
         {error && (
           <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={16} color={Colors.error[600]} />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -237,30 +289,78 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 8,
   },
-  verifyButton: {
-    width: '100%',
+  otpContainer: {
+    marginBottom: 24,
+  },
+  otpLabel: {
+    ...Typography.label,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  otpInputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  otpInput: {
+    width: 45,
+    height: 55,
+    borderWidth: 2,
+    borderColor: Colors.neutral[300],
+    borderRadius: 12,
+    textAlign: 'center',
+    fontSize: 20,
+    fontFamily: 'Inter-SemiBold',
+    color: Colors.neutral[900],
+    backgroundColor: Colors.white,
+  },
+  otpInputFilled: {
+    borderColor: Colors.primary[600],
+    backgroundColor: Colors.primary[50],
+  },
+  otpInputError: {
+    borderColor: Colors.error[500],
+    backgroundColor: Colors.error[50],
+  },
+  verifyingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
+  },
+  verifyingText: {
+    ...Typography.bodySmall,
+    color: Colors.success[600],
+    marginLeft: 6,
+    fontFamily: 'Inter-Medium',
   },
   resendButton: {
     width: '100%',
     marginTop: 16,
   },
   cooldownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     width: '100%',
     marginTop: 16,
     paddingVertical: 12,
-    alignItems: 'center',
+    backgroundColor: Colors.neutral[50],
+    borderRadius: 8,
   },
   cooldownText: {
     ...Typography.body,
     color: Colors.neutral[600],
-    textAlign: 'center',
+    marginLeft: 6,
   },
   changePhoneButton: {
     width: '100%',
     marginTop: 8,
   },
   errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.error[50],
     padding: 12,
     borderRadius: 8,
@@ -269,6 +369,8 @@ const styles = StyleSheet.create({
   errorText: {
     ...Typography.bodySmall,
     color: Colors.error[700],
+    marginLeft: 6,
     textAlign: 'center',
+    flex: 1,
   },
 });

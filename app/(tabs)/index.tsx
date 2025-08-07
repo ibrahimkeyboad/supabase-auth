@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, ShoppingCart, Bell } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
