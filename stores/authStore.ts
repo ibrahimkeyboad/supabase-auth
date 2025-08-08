@@ -148,10 +148,8 @@ export const useAuthStore = create<AuthStore>()(
         otpCooldown: 0,
       });
 
-      // Redirect to callback for profile checking
-      if (typeof window !== 'undefined' && window.location) {
-        window.location.href = '/auth/callback';
-      }
+      // Note: Navigation will be handled by the auth state change listener
+      // The useAuth hook will detect the user change and navigate appropriately
     } catch (error) {
       console.error('❌ Unexpected OTP verification error:', error);
       set({

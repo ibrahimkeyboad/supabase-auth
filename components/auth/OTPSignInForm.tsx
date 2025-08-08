@@ -8,6 +8,7 @@ import {
   Platform,
   TextInput,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
@@ -22,6 +23,7 @@ interface OTPSignInFormProps {
 }
 
 export default function OTPSignInForm({ style }: OTPSignInFormProps) {
+  const router = useRouter();
   const { signInWithOTP, verifyOTP, loading, verifyingOtp, otpSent, error, clearError, canResendOTP, getResendCooldownTime } = useAuth();
   const { savedPhoneNumber, resetOTPState } = useAuthStore();
   const [phone, setPhone] = useState(savedPhoneNumber || '');
@@ -71,7 +73,7 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
     const fullOtp = otpDigits.join('');
     if (fullOtp.length === 6 && /^\d{6}$/.test(fullOtp)) {
       setOtpCode(fullOtp);
-      handleVerifyOTP(fullOtp);
+      handleVerifyOTPWithNavigation(fullOtp);
     }
   }, [otpDigits]);
 
@@ -110,6 +112,26 @@ export default function OTPSignInForm({ style }: OTPSignInFormProps) {
 
     clearError();
     await verifyOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone, codeToVerify);
+  };
+
+  const handleVerifyOTPWithNavigation = async (otp?: string) => {
+    const codeToVerify = otp || otpCode;
+    
+    if (!codeToVerify.trim()) {
+      Alert.alert('Error', 'Please enter the OTP code');
+      return;
+    }
+
+    if (codeToVerify.length !== 6) {
+      Alert.alert('Error', 'OTP code must be 6 digits');
+      return;
+    }
+
+    clearError();
+    await verifyOTP(phone.startsWith('0') ? '+255' + phone.slice(1) : phone, codeToVerify);
+    
+    // Navigate to callback after successful verification
+    router.replace('/auth/callback');
   };
 
   const handleResendOTP = async () => {
